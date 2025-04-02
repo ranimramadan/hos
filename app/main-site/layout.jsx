@@ -1,24 +1,15 @@
 
+'use client';
 import Header from "./components/Header";
 
-export const metadata = {
-  title: "Prescripto - Book Appointments",
-  description: "Book appointments with trusted doctors easily.",
-};
-
-
-
-export default function MainLayout({ children }) {
-    return (
-        <html >
-          <body>
-        
-            <div>
-                <Header/>
-                { children }
-            </div>
-          </body>
-        </html>
-      );
-  }
+export default function MainSiteLayout({ children }) {
+  return (
+    <div className="min-h-screen" dir="ltr">
+      <Header />
+      <main className="container mx-auto px-4">
+        {children}
+      </main>
+    </div>
+  );
+}
   

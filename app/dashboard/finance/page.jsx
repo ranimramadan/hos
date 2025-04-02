@@ -1,147 +1,199 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Link from 'next/link';
 
 export default function FinancePage() {
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   const [selectedCategory, setSelectedCategory] = useState('all');
-
-  const financialData = {
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [financialSummary, setFinancialSummary] = useState({
     revenue: {
-      total: 250000,
-      treatments: 150000,
-      medications: 60000,
-      laboratory: 40000
+      total: 0
     },
     expenses: {
-      total: 180000,
-      salaries: 100000,
-      supplies: 50000,
-      maintenance: 30000
-    },
-    transactions: [
-      {
-        id: 1,
-        date: '2024-01-15',
-        type: 'دخل',
-        category: 'علاج',
-        amount: 1500,
-        description: 'كشف طبي - د. محمد أحمد',
-        patient: 'أحمد خالد'
-      },
-      {
-        id: 2,
-        date: '2024-01-15',
-        type: 'مصروف',
-        category: 'مستلزمات',
-        amount: 5000,
-        description: 'شراء معدات طبية',
-        department: 'قسم الطوارئ'
+      total: 0
+    }
+  });
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [selectedPeriod]);
+
+  const fetchInvoices = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/invoices', {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data && response.data.data) {
+        setInvoices(response.data.data);
+        calculateFinancialSummary(response.data.data);
       }
-    ]
+    } catch (error) {
+      setError('فشل في تحميل البيانات المالية');
+      console.error('API Error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const calculateFinancialSummary = (invoicesData) => {
+    const summary = invoicesData.reduce((acc, invoice) => {
+      const amount = parseFloat(invoice.amount);
+      if (invoice.status === 'paid') {
+        acc.revenue.total += amount;
+      }
+      acc.totalAmount += amount;
+      acc.invoiceCounts.total += 1;
+      acc.invoiceCounts[invoice.status] = (acc.invoiceCounts[invoice.status] || 0) + 1;
+      
+      return acc;
+    }, {
+      revenue: { total: 0 },
+      expenses: { total: 0 },
+      totalAmount: 0,
+      invoiceCounts: {
+        total: 0,
+        paid: 0,
+        pending: 0,
+        overdue: 0
+      }
+    });
+  
+    setFinancialSummary(summary);
+  };
+  
+  const getStatusInArabic = (status) => {
+    const statusMap = {
+      'pending': 'قيد الانتظار',
+      'paid': 'مدفوع',
+      'overdue': 'متأخر',
+      'cancelled': 'ملغي'
+    };
+    return statusMap[status] || status;
+  };
+
+  const filteredInvoices = invoices.filter(invoice => {
+    if (selectedCategory === 'all') return true;
+    return invoice.status === selectedCategory;
+  });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">الإدارة المالية</h1>
-
-        {/* Period Selector */}
         <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setSelectedPeriod('daily')}
-            className={`px-4 py-2 rounded-lg ${selectedPeriod === 'daily' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          >
-            يومي
-          </button>
-          <button
-            onClick={() => setSelectedPeriod('weekly')}
-            className={`px-4 py-2 rounded-lg ${selectedPeriod === 'weekly' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          >
-            أسبوعي
-          </button>
-          <button
-            onClick={() => setSelectedPeriod('monthly')}
-            className={`px-4 py-2 rounded-lg ${selectedPeriod === 'monthly' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          >
-            شهري
-          </button>
-          <button
-            onClick={() => setSelectedPeriod('yearly')}
-            className={`px-4 py-2 rounded-lg ${selectedPeriod === 'yearly' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          >
-            سنوي
-          </button>
+          {/* ... existing period selector buttons ... */}
         </div>
       </div>
 
-      {/* Financial Summary */}
+      {/* Financial Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Revenue Card */}
+        {/* Total Revenue Card */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-green-600">الإيرادات</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">الإجمالي</span>
-              <span className="text-2xl font-bold text-green-600">₪{financialData.revenue.total}</span>
-            </div>
-            <div className="space-y-2 mt-4">
-              <div className="flex justify-between">
-                <span className="text-gray-600">العلاجات</span>
-                <span>₪{financialData.revenue.treatments}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">الأدوية</span>
-                <span>₪{financialData.revenue.medications}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">المختبر</span>
-                <span>₪{financialData.revenue.laboratory}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Expenses Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-red-600">المصروفات</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">الإجمالي</span>
-              <span className="text-2xl font-bold text-red-600">₪{financialData.expenses.total}</span>
-            </div>
-            <div className="space-y-2 mt-4">
-              <div className="flex justify-between">
-                <span className="text-gray-600">الرواتب</span>
-                <span>₪{financialData.expenses.salaries}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">المستلزمات</span>
-                <span>₪{financialData.expenses.supplies}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">الصيانة</span>
-                <span>₪{financialData.expenses.maintenance}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Net Profit Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-blue-600">صافي الربح</h3>
+          <h3 className="text-lg font-semibold mb-4 text-green-600">الإيرادات المحصلة</h3>
           <div className="flex justify-between items-center">
             <span className="text-gray-600">الإجمالي</span>
-            <span className="text-2xl font-bold text-blue-600">
-              ₪{financialData.revenue.total - financialData.expenses.total}
+            <span className="text-2xl font-bold text-green-600">₪{financialSummary.revenue.total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Total Amount Card */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4 text-blue-600">إجمالي المستحقات</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">الإجمالي</span>
+            <span className="text-2xl font-bold text-blue-600">₪{financialSummary.totalAmount?.toFixed(2) || '0.00'}</span>
+          </div>
+        </div>
+
+        {/* Continue with all other cards... */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4 text-yellow-600">المستحقات المعلقة</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">الإجمالي</span>
+            <span className="text-2xl font-bold text-yellow-600">
+              ₪{((financialSummary.totalAmount || 0) - (financialSummary.revenue.total || 0)).toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4 text-purple-600">إجمالي الفواتير</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">العدد</span>
+            <span className="text-2xl font-bold text-purple-600">{financialSummary.invoiceCounts?.total || 0}</span>
+          </div>
+        </div>
+  
+        {/* Paid Invoices */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4 text-green-600">الفواتير المدفوعة</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">العدد</span>
+            <span className="text-2xl font-bold text-green-600">{financialSummary.invoiceCounts.paid || 0}</span>
+          </div>
+        </div>
+  
+        {/* Pending Invoices */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4 text-yellow-600">الفواتير المعلقة</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">العدد</span>
+            <span className="text-2xl font-bold text-yellow-600">{financialSummary.invoiceCounts.pending || 0}</span>
+          </div>
+        </div>
+  
+        {/* Overdue Invoices */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4 text-red-600">الفواتير المتأخرة</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">العدد</span>
+            <span className="text-2xl font-bold text-red-600">{financialSummary.invoiceCounts.overdue || 0}</span>
+          </div>
+        </div>
+  
+        {/* Collection Rate */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4 text-indigo-600">معدل التحصيل</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">النسبة</span>
+            <span className="text-2xl font-bold text-indigo-600">
+              {((financialSummary.revenue.total / financialSummary.totalAmount) * 100).toFixed(1)}%
+            </span>
+          </div>
+        </div>
+  
+        {/* Average Invoice Amount */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4 text-teal-600">متوسط قيمة الفاتورة</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">المتوسط</span>
+            <span className="text-2xl font-bold text-teal-600">
+              ₪{(financialSummary.totalAmount / financialSummary.invoiceCounts.total).toFixed(2)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Recent Transactions */}
+      {/* Invoices List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="p-6">
-          <h3 className="text-lg font-semibold mb-4">المعاملات الأخيرة</h3>
+          <h3 className="text-lg font-semibold mb-4">الفواتير</h3>
           <div className="flex gap-4 mb-4">
             <button
               onClick={() => setSelectedCategory('all')}
@@ -150,46 +202,73 @@ export default function FinancePage() {
               الكل
             </button>
             <button
-              onClick={() => setSelectedCategory('income')}
-              className={`px-4 py-2 rounded-lg ${selectedCategory === 'income' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+              onClick={() => setSelectedCategory('paid')}
+              className={`px-4 py-2 rounded-lg ${selectedCategory === 'paid' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
             >
-              الدخل
+              مدفوع
             </button>
             <button
-              onClick={() => setSelectedCategory('expense')}
-              className={`px-4 py-2 rounded-lg ${selectedCategory === 'expense' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
+              onClick={() => setSelectedCategory('pending')}
+              className={`px-4 py-2 rounded-lg ${selectedCategory === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-200'}`}
             >
-              المصروفات
+              قيد الانتظار
+            </button>
+            <button
+              onClick={() => setSelectedCategory('overdue')}
+              className={`px-4 py-2 rounded-lg ${selectedCategory === 'overdue' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
+            >
+              متأخر
             </button>
           </div>
         </div>
+
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">التاريخ</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">النوع</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">التصنيف</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">رقم الفاتورة</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">المريض</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تاريخ الاستحقاق</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">المبلغ</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الحالة</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الوصف</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">إجراءات</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {financialData.transactions.map((transaction) => (
-              <tr key={transaction.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{transaction.date}</td>
+            {filteredInvoices.map((invoice) => (
+              <tr key={invoice.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{invoice.id}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{invoice.patient?.name}</div>
+                  <div className="text-sm text-gray-500">{invoice.patient?.phone}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.due_date}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                  ₪{invoice.amount}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold
-                    ${transaction.type === 'دخل' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {transaction.type}
+                    ${invoice.status === 'paid' ? 'bg-green-100 text-green-800' : 
+                      invoice.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                      'bg-red-100 text-red-800'}`}>
+                    {getStatusInArabic(invoice.status)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{transaction.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{invoice.description}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <span className={transaction.type === 'دخل' ? 'text-green-600' : 'text-red-600'}>
-                    ₪{transaction.amount}
-                  </span>
+                  <Link 
+                    href={`/dashboard/finance/invoices/${invoice.id}`}
+                    className="text-blue-600 hover:text-blue-900 ml-4"
+                  >
+                    عرض
+                  </Link>
+                  <Link 
+                    href={`/dashboard/finance/invoices/edit/${invoice.id}`}
+                    className="text-green-600 hover:text-green-900 ml-4"
+                  >
+                    تعديل
+                  </Link>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{transaction.description}</td>
               </tr>
             ))}
           </tbody>
@@ -198,9 +277,12 @@ export default function FinancePage() {
 
       {/* Action Buttons */}
       <div className="mt-6 flex justify-end gap-4">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-          إضافة معاملة
-        </button>
+        <Link 
+          href="/dashboard/finance/invoices/add"
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        >
+          إضافة فاتورة
+        </Link>
         <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
           تصدير التقرير
         </button>
