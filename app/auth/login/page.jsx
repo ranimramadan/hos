@@ -34,9 +34,16 @@ export default function LoginPage() {
       const response = await api.post('/api/login', formData);
       
       if (response.data.status) {
+        const userData = response.data.data.user;
         localStorage.setItem('token', response.data.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
-        router.push('/dashboard');
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Check user role and redirect accordingly
+        if (userData.role === 'doctor') {
+          router.push('/dashboard');
+        } else {
+          router.push('/home');
+        }
       } else {
         setError(response.data.message || 'فشل تسجيل الدخول');
       }
