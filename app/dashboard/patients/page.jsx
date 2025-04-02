@@ -1,50 +1,108 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function PatientsPage() {
+  const router = useRouter(); // Initialize router at the top level
+  const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // بيانات تجريبية للمرضى
-  const patients = [
-    {
-      id: 1,
-      name: 'أحمد محمد',
-      age: 45,
-      phone: '0501234567',
-      condition: 'مستقرة',
-      doctor: 'د. خالد العمري',
-      lastVisit: '2024-01-15',
-      status: 'نشط'
-    },
-    {
-      id: 2,
-      name: 'سارة أحمد',
-      age: 32,
-      phone: '0507654321',
-      condition: 'تحت المراقبة',
-      doctor: 'د. ليلى حسن',
-      lastVisit: '2024-01-14',
-      status: 'نشط'
-    },
-    // يمكن إضافة المزيد من المرضى هنا
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      if (typeof window !== 'undefined') {
+        try {
+          const response = await axios.get('http://127.0.0.1:8000/api/patients', {
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.data && response.data.data) {
+            setPatients(response.data.data); // Access the data property
+          } else {
+            setPatients([]);
+          }
+        } catch (error) {
+          setError('Failed to load patient data');
+          console.error('API Error:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
+  // Format date safely
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }).format(new Date(dateString));
+    } catch {
+      return dateString;
+    }
+  };
 
   const filteredPatients = patients.filter(patient =>
-    patient.name.includes(searchTerm) ||
-    patient.doctor.includes(searchTerm) ||
-    patient.condition.includes(searchTerm)
+    patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.phone?.includes(searchTerm)
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <div className="text-red-600 text-xl">{error}</div>
+      </div>
+    );
+  }
+
+  const handleDelete = async (patientId) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا المريض؟')) {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/api/patients/${patientId}`, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        // Update the patients list after successful deletion
+        setPatients(patients.filter(patient => patient.id !== patientId));
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('فشل في حذف المريض');
+      }
+    }
+  };
 
   return (
     <div className="p-6">
       <div className="mb-8 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">قائمة المرضى</h1>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+        <Link href="/dashboard/patients/add" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
           إضافة مريض جديد +
-        </button>
+        </Link>
       </div>
 
-      {/* Search and Filter Section */}
       <div className="mb-6">
         <div className="relative">
           <input
@@ -62,7 +120,6 @@ export default function PatientsPage() {
         </div>
       </div>
 
-      {/* Patients Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -71,22 +128,16 @@ export default function PatientsPage() {
                 اسم المريض
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                العمر
+                البريد الإلكتروني
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 رقم الهاتف
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                الحالة الصحية
+                العنوان
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                الطبيب المعالج
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                آخر زيارة
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                الحالة
+                تاريخ التسجيل
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 إجراءات
@@ -100,32 +151,38 @@ export default function PatientsPage() {
                   <div className="text-sm font-medium text-gray-900">{patient.name}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{patient.age}</div>
+                  <div className="text-sm text-gray-900">{patient.email}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{patient.phone}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    ${patient.condition === 'مستقرة' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                    {patient.condition}
-                  </span>
+                <td className="px-6 py-4">
+                  <div className="text-sm text-gray-900">{patient.address}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{patient.doctor}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{patient.lastVisit}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    {patient.status}
-                  </span>
+                  <div className="text-sm text-gray-900">
+                    {formatDate(patient.created_at)}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-blue-600 hover:text-blue-900 ml-4">عرض</button>
-                  <button className="text-green-600 hover:text-green-900 ml-4">تعديل</button>
-                  <button className="text-red-600 hover:text-red-900">حذف</button>
+                  <Link 
+                    href={`/dashboard/patients/show/${patient.id}`}
+                    className="text-blue-600 hover:text-blue-900 ml-4"
+                  >
+                    عرض
+                  </Link>
+                  <Link 
+                    href={`/dashboard/patients/edit/${patient.id}`}
+                    className="text-green-600 hover:text-green-900 ml-4 cursor-pointer"
+                  >
+                    تعديل
+                  </Link>
+                  <button 
+                    onClick={() => handleDelete(patient.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    حذف
+                  </button>
                 </td>
               </tr>
             ))}

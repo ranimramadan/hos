@@ -1,19 +1,59 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'patient' // Default role for registration
   });
 
-  const handleSubmit = (e) => {
+  const api = axios.create({
+    baseURL: 'http://127.0.0.1:8000',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    withCredentials: true
+  });
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // هنا سيتم إضافة منطق التسجيل لاحقاً
-    console.log(formData);
+    setIsLoading(true);
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('كلمات المرور غير متطابقة');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      await api.get('/sanctum/csrf-cookie');
+      const response = await api.post('/api/register', formData);
+      
+      if (response.data.status) {
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        router.push('/home');
+      } else {
+        setError(response.data.message || 'فشل في إنشاء الحساب');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError(error.response?.data?.message || 'حدث خطأ في إنشاء الحساب');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -26,6 +66,12 @@ export default function RegisterPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {error && (
+            <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+              {error}
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -94,9 +140,12 @@ export default function RegisterPage() {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                disabled={isLoading}
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                إنشاء حساب
+                {isLoading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
               </button>
             </div>
           </form>

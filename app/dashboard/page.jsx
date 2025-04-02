@@ -1,4 +1,25 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Loading from './loading';
+
 export default function DashboardPage() {
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Simulate loading time
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
   const stats = [
     { title: 'إجمالي المرضى', value: '1,234', change: '+12%' },
     { title: 'المواعيد اليوم', value: '42', change: '+8%' },
