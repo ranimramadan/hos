@@ -27,7 +27,7 @@ export default function SettingsPage() {
     currency: 'SAR'
   });
 
-  // Add icons for tabs
+ 
   const tabs = [
     { 
       id: 'general', 
