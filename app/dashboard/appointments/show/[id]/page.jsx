@@ -3,27 +3,35 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
+// Add to imports
+import Alert from '@/app/components/Alert';
+
 export default function ShowAppointmentPage({ params }) {
   const router = useRouter();
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Add to state
+  const [notification, setNotification] = useState(null);
+
   useEffect(() => {
     const fetchAppointment = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/appointments/${params.id}`, {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-        
+        const response = await axios.get(`http://127.0.0.1:8000/api/appointments/${params.id}`);
         if (response.data && response.data.data) {
           setAppointment(response.data.data);
+          setNotification({
+            message: 'تم تحميل بيانات الموعد بنجاح',
+            type: 'success'
+          });
         }
       } catch (error) {
         setError('فشل في تحميل بيانات الموعد');
+        setNotification({
+          message: 'فشل في تحميل بيانات الموعد',
+          type: 'error'
+        });
       } finally {
         setLoading(false);
       }
@@ -34,34 +42,15 @@ export default function ShowAppointmentPage({ params }) {
     }
   }, [params.id]);
 
-  const getStatusInArabic = (status) => {
-    const statusMap = {
-      'pending': 'قيد الانتظار',
-      'confirmed': 'مؤكد',
-      'completed': 'مكتمل',
-      'cancelled': 'ملغي'
-    };
-    return statusMap[status] || status;
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 text-center">
-        <div className="text-red-600 text-xl">{error}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="max-w-3xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">تفاصيل الموعد</h1>

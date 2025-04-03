@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
+// Add to imports
+import Alert from '@/app/components/Alert';
+
 export default function EditAppointmentPage({ params }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -54,34 +57,39 @@ export default function EditAppointmentPage({ params }) {
     fetchData();
   }, [params.id]);
 
+  // Add to state
+  const [notification, setNotification] = useState(null);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put(`http://127.0.0.1:8000/api/appointments/${params.id}`, formData, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+      await axios.put(`http://127.0.0.1:8000/api/appointments/${params.id}`, formData);
+      setNotification({
+        message: 'تم تحديث الموعد بنجاح',
+        type: 'success'
       });
-      router.push('/dashboard/appointments');
+      setTimeout(() => router.push('/dashboard/appointments'), 2000);
     } catch (error) {
       setError(error.response?.data?.message || 'فشل في تحديث الموعد');
+      setNotification({
+        message: 'فشل في تحديث الموعد',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">تعديل الموعد</h1>
 

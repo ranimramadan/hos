@@ -2,57 +2,31 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Alert from '@/app/components/Alert';
+
+// Add to imports
+import Alert from '@/app/components/Alert';
 
 export default function AddAppointmentPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [doctors, setDoctors] = useState([]);
-  const [patients, setPatients] = useState([]);
-  const [formData, setFormData] = useState({
-    date: '',
-    time: '',
-    doctor_id: '',
-    patient_id: '',
-    status: 'pending'
-  });
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [doctorsRes, patientsRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8000/api/doctors'),
-          axios.get('http://127.0.0.1:8000/api/patients')
-        ]);
-
-        if (doctorsRes.data && doctorsRes.data.data) {
-          setDoctors(doctorsRes.data.data);
-        }
-
-        if (patientsRes.data && patientsRes.data.data) {
-          setPatients(patientsRes.data.data);
-        }
-      } catch (error) {
-        setError('فشل في تحميل البيانات');
-      }
-    };
-
-    fetchData();
-  }, []);
+  // Add to state
+  const [notification, setNotification] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/appointments', formData, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+      await axios.post('http://127.0.0.1:8000/api/appointments', formData);
+      setNotification({
+        message: 'تم إضافة الموعد بنجاح',
+        type: 'success'
       });
-      router.push('/dashboard/appointments');
+      setTimeout(() => router.push('/dashboard/appointments'), 2000);
     } catch (error) {
       setError(error.response?.data?.message || 'فشل في إضافة الموعد');
+      setNotification({
+        message: 'فشل في إضافة الموعد',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -60,6 +34,13 @@ export default function AddAppointmentPage() {
 
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">إضافة موعد جديد</h1>
 

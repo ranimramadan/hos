@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Link from 'next/link';
+import Alert from '@/app/components/Alert';
 
 export default function AppointmentsPage() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -27,10 +29,17 @@ export default function AppointmentsPage() {
       
       if (response.data && response.data.data) {
         setAppointments(response.data.data);
+        setNotification({
+          message: 'تم تحميل المواعيد بنجاح',
+          type: 'success'
+        });
       }
     } catch (error) {
       setError('فشل في تحميل بيانات المواعيد');
-      console.error('API Error:', error);
+      setNotification({
+        message: 'فشل في تحميل بيانات المواعيد',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -46,9 +55,15 @@ export default function AppointmentsPage() {
           }
         });
         setAppointments(appointments.filter(appointment => appointment.id !== id));
+        setNotification({
+          message: 'تم حذف الموعد بنجاح',
+          type: 'success'
+        });
       } catch (error) {
-        console.error('Delete error:', error);
-        alert('فشل في حذف الموعد');
+        setNotification({
+          message: 'فشل في حذف الموعد',
+          type: 'error'
+        });
       }
     }
   };
@@ -65,31 +80,22 @@ export default function AppointmentsPage() {
 
   const filteredAppointments = appointments.filter(appointment => {
     const matchesSearch = 
-      appointment.patient?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.doctor?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      (appointment.patient?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (appointment.doctor?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     if (filter === 'all') return matchesSearch;
     return matchesSearch && appointment.status === filter;
   });
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 text-center">
-        <div className="text-red-600 text-xl">{error}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="mb-8 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">إدارة المواعيد</h1>
         <Link 
@@ -152,53 +158,61 @@ export default function AppointmentsPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredAppointments.map((appointment) => (
-              <tr key={appointment.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{appointment.patient?.name}</div>
-                  <div className="text-sm text-gray-500">{appointment.patient?.phone}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{appointment.doctor?.name}</div>
-                  <div className="text-sm text-gray-500">{appointment.doctor?.phone}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {appointment.date}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {appointment.time}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                    ${appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                      appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
-                      appointment.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                      'bg-red-100 text-red-800'}`}>
-                    {getStatusInArabic(appointment.status)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link 
-                    href={`/dashboard/appointments/show/${appointment.id}`}
-                    className="text-blue-600 hover:text-blue-900 ml-4"
-                  >
-                    عرض
-                  </Link>
-                  <Link 
-                    href={`/dashboard/appointments/edit/${appointment.id}`}
-                    className="text-green-600 hover:text-green-900 ml-4"
-                  >
-                    تعديل
-                  </Link>
-                  <button 
-                    onClick={() => handleDelete(appointment.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    حذف
-                  </button>
+            {appointments.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                  لا توجد مواعيد متاحة
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredAppointments.map((appointment) => (
+                <tr key={appointment.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{appointment.patient?.name}</div>
+                    <div className="text-sm text-gray-500">{appointment.patient?.phone}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{appointment.doctor?.name}</div>
+                    <div className="text-sm text-gray-500">{appointment.doctor?.phone}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {appointment.date}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {appointment.time}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                      ${appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                        appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                        appointment.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                        'bg-red-100 text-red-800'}`}>
+                      {getStatusInArabic(appointment.status)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <Link 
+                      href={`/dashboard/appointments/show/${appointment.id}`}
+                      className="text-blue-600 hover:text-blue-900 ml-4"
+                    >
+                      عرض
+                    </Link>
+                    <Link 
+                      href={`/dashboard/appointments/edit/${appointment.id}`}
+                      className="text-green-600 hover:text-green-900 ml-4"
+                    >
+                      تعديل
+                    </Link>
+                    <button 
+                      onClick={() => handleDelete(appointment.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      حذف
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import Alert from '../components/Alert';
 
 export default function PatientHomePage() {
   const [user, setUser] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -34,25 +36,32 @@ export default function PatientHomePage() {
       const response = await api.get('/api/patient/appointments');
       if (response.data.data) {
         setAppointments(response.data.data);
+        setNotification({
+          message: 'تم تحميل المواعيد بنجاح',
+          type: 'success'
+        });
       }
     } catch (error) {
       setError('فشل في تحميل المواعيد');
+      setNotification({
+        message: 'فشل في تحميل المواعيد',
+        type: 'error'
+      });
       console.error('Error fetching appointments:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-100">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       {/* Welcome Banner */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
