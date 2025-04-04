@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Alert from '@/app/components/Alert';
 
 export default function AddInvoicePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState(null);
   const [invoice, setInvoice] = useState({
     patient_id: '',
     amount: '',
@@ -31,26 +33,32 @@ export default function AddInvoicePage() {
       });
 
       if (response.data) {
-        router.push('/dashboard/finance');
+        setNotification({
+          message: 'تم إضافة الفاتورة بنجاح',
+          type: 'success'
+        });
+        setTimeout(() => router.push('/dashboard/finance'), 2000);
       }
     } catch (error) {
       setError('فشل في إضافة الفاتورة');
-      console.error('API Error:', error);
+      setNotification({
+        message: 'فشل في إضافة الفاتورة',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setInvoice(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">إضافة فاتورة جديدة</h1>

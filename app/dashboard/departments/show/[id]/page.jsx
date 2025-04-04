@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Alert from '@/app/components/Alert';
 
 export default function ShowDepartmentPage({ params }) {
   const router = useRouter();
   const [department, setDepartment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const fetchDepartment = async () => {
@@ -21,9 +23,17 @@ export default function ShowDepartmentPage({ params }) {
         
         if (response.data && response.data.data) {
           setDepartment(response.data.data);
+          setNotification({
+            message: 'تم تحميل بيانات القسم بنجاح',
+            type: 'success'
+          });
         }
       } catch (error) {
         setError('فشل في تحميل بيانات القسم');
+        setNotification({
+          message: 'فشل في تحميل بيانات القسم',
+          type: 'error'
+        });
       } finally {
         setLoading(false);
       }
@@ -34,24 +44,15 @@ export default function ShowDepartmentPage({ params }) {
     }
   }, [params.id]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 text-center">
-        <div className="text-red-600 text-xl">{error}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">تفاصيل القسم</h1>

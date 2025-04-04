@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Alert from '@/app/components/Alert';
 
 export default function DoctorsPage() {
   const router = useRouter();
@@ -10,10 +11,7 @@ export default function DoctorsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
+  const [notification, setNotification] = useState(null);
 
   const fetchDoctors = async () => {
     try {
@@ -26,10 +24,17 @@ export default function DoctorsPage() {
       
       if (response.data && response.data.data) {
         setDoctors(response.data.data);
+        setNotification({
+          message: 'تم تحميل بيانات الأطباء بنجاح',
+          type: 'success'
+        });
       }
     } catch (error) {
       setError('Failed to load doctors data');
-      console.error('API Error:', error);
+      setNotification({
+        message: 'فشل في تحميل بيانات الأطباء',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -45,18 +50,31 @@ export default function DoctorsPage() {
           }
         });
         setDoctors(doctors.filter(doctor => doctor.id !== doctorId));
+        setNotification({
+          message: 'تم حذف الطبيب بنجاح',
+          type: 'success'
+        });
       } catch (error) {
-        console.error('Delete error:', error);
-        alert('فشل في حذف الطبيب');
+        setNotification({
+          message: 'فشل في حذف الطبيب',
+          type: 'error'
+        });
       }
     }
   };
 
-  const filteredDoctors = doctors.filter(doctor =>
-    doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doctor.department?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doctor.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Add the filtering function
+  const getFilteredDoctors = () => {
+    return doctors.filter(doctor =>
+      doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doctor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doctor.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
 
   if (loading) {
     return (
@@ -66,19 +84,23 @@ export default function DoctorsPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-6 text-center">
-        <div className="text-red-600 text-xl">{error}</div>
-      </div>
-    );
-  }
+  const filteredDoctors = getFilteredDoctors();
 
   return (
     <div className="p-6">
-      <div className="mb-8 flex justify-between items-center">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">قائمة الأطباء</h1>
-        <Link href="/dashboard/doctors/add" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+        <Link
+          href="/dashboard/doctors/add"
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+        >
           إضافة طبيب جديد +
         </Link>
       </div>

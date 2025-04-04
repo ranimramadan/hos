@@ -1,17 +1,18 @@
 "use client";
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
-import { DoctorDetail } from '../details/components/DoctorDetail';
+import DoctorDetail from '../details/components/DoctorDetail';
 import DoctorSuggestionList from '../details/components/DoctorSuggestionList';
+import Image from 'next/image';
 
 function DoctorDetailPage() {
   const searchParams = useSearchParams();
   const doctorInfo = {
-    name: searchParams.get('name'),
-    specialty: searchParams.get('specialty'),
-    experience: searchParams.get('experience'),
-    description: searchParams.get('description'),
-    image: searchParams.get('image')
+    name: searchParams.get('name') || '',
+    specialty: searchParams.get('specialty') || '',
+    experience: searchParams.get('experience') || '',
+    description: searchParams.get('description') || '',
+    image: searchParams.get('image') || '/images/default-doctor.png'
   };
 
   return (

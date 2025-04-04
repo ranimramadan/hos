@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import Alert from '@/app/components/Alert';
 
 export default function FinancePage() {
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
@@ -17,6 +18,7 @@ export default function FinancePage() {
       total: 0
     }
   });
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     fetchInvoices();
@@ -34,10 +36,17 @@ export default function FinancePage() {
       if (response.data && response.data.data) {
         setInvoices(response.data.data);
         calculateFinancialSummary(response.data.data);
+        setNotification({
+          message: 'تم تحميل البيانات المالية بنجاح',
+          type: 'success'
+        });
       }
     } catch (error) {
       setError('فشل في تحميل البيانات المالية');
-      console.error('API Error:', error);
+      setNotification({
+        message: 'فشل في تحميل البيانات المالية',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -94,6 +103,13 @@ export default function FinancePage() {
 
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">الإدارة المالية</h1>
         <div className="flex gap-4 mb-6">

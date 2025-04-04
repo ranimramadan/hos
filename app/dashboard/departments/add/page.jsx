@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Alert from '@/app/components/Alert';
 
 export default function AddDepartmentPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -27,9 +29,17 @@ export default function AddDepartmentPage() {
           'Content-Type': 'application/json'
         }
       });
-      router.push('/dashboard/departments');
+      setNotification({
+        message: 'تم إضافة القسم بنجاح',
+        type: 'success'
+      });
+      setTimeout(() => router.push('/dashboard/departments'), 2000);
     } catch (error) {
       setError(error.response?.data?.message || 'فشل في إضافة القسم');
+      setNotification({
+        message: 'فشل في إضافة القسم',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -37,6 +47,13 @@ export default function AddDepartmentPage() {
 
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">إضافة قسم جديد</h1>
 

@@ -2,11 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Alert from '@/app/components/Alert';
 
 export default function EditDepartmentPage({ params }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -61,24 +63,31 @@ export default function EditDepartmentPage({ params }) {
           'Content-Type': 'application/json'
         }
       });
-      router.push('/dashboard/departments');
+      setNotification({
+        message: 'تم تحديث القسم بنجاح',
+        type: 'success'
+      });
+      setTimeout(() => router.push('/dashboard/departments'), 2000);
     } catch (error) {
-      setError(error.response?.data?.message || 'فشل في تحديث بيانات القسم');
+      setError(error.response?.data?.message || 'فشل في تحديث القسم');
+      setNotification({
+        message: 'فشل في تحديث القسم',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">تعديل بيانات القسم</h1>
 

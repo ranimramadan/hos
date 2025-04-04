@@ -2,37 +2,46 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Alert from '@/app/components/Alert';
+import Loading from '@/app/dashboard/loading/page';
 
 export default function ShowInvoicePage({ params }) {
   const router = useRouter();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
-    const fetchInvoice = async () => {
-      try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/invoices/${params.id}`, {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.data && response.data.data) {
-          setInvoice(response.data.data);
-        }
-      } catch (error) {
-        setError('فشل في تحميل بيانات الفاتورة');
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchInvoice();
+  }, []); // Add empty dependency array
 
-    if (params.id) {
-      fetchInvoice();
+  const fetchInvoice = async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/invoices/${params.id}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data && response.data.data) {
+        setInvoice(response.data.data);
+        setNotification({
+          message: 'تم تحميل بيانات الفاتورة بنجاح',
+          type: 'success'
+        });
+      }
+    } catch (error) {
+      setError('فشل في تحميل بيانات الفاتورة');
+      setNotification({
+        message: 'فشل في تحميل بيانات الفاتورة',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
     }
-  }, [params.id]);
+  };
 
   const getStatusInArabic = (status) => {
     const statusMap = {
@@ -45,15 +54,18 @@ export default function ShowInvoicePage({ params }) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">تفاصيل الفاتورة #{invoice?.id}</h1>

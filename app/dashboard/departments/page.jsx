@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Alert from '@/app/components/Alert';
 
 export default function DepartmentsPage() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function DepartmentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     fetchDepartments();
@@ -26,10 +28,17 @@ export default function DepartmentsPage() {
       
       if (response.data && response.data.data) {
         setDepartments(response.data.data);
+        setNotification({
+          message: 'تم تحميل الأقسام بنجاح',
+          type: 'success'
+        });
       }
     } catch (error) {
       setError('فشل في تحميل بيانات الأقسام');
-      console.error('API Error:', error);
+      setNotification({
+        message: 'فشل في تحميل بيانات الأقسام',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -45,9 +54,15 @@ export default function DepartmentsPage() {
           }
         });
         setDepartments(departments.filter(dept => dept.id !== deptId));
+        setNotification({
+          message: 'تم حذف القسم بنجاح',
+          type: 'success'
+        });
       } catch (error) {
-        console.error('Delete error:', error);
-        alert('فشل في حذف القسم');
+        setNotification({
+          message: 'فشل في حذف القسم',
+          type: 'error'
+        });
       }
     }
   };
@@ -75,6 +90,13 @@ export default function DepartmentsPage() {
 
   return (
     <div className="p-6">
+      {notification && (
+        <Alert
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="mb-8 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">الأقسام الطبية</h1>
         <Link 
