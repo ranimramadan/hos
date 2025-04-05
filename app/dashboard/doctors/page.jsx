@@ -4,6 +4,8 @@ import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Alert from '@/app/components/Alert';
+import Loading from '@/app/dashboard/loading';
+
 
 export default function DoctorsPage() {
   const router = useRouter();
@@ -78,9 +80,7 @@ export default function DoctorsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+<Loading />
     );
   }
 
@@ -96,12 +96,21 @@ export default function DoctorsPage() {
         />
       )}
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">قائمة الأطباء</h1>
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+            <span className="text-blue-600 text-3xl">👨‍⚕️</span>
+            قائمة الأطباء
+          </h1>
+          <p className="text-gray-500">إدارة ومتابعة الأطباء في المستشفى</p>
+        </div>
         <Link
           href="/dashboard/doctors/add"
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+          className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
         >
-          إضافة طبيب جديد +
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          إضافة طبيب جديد
         </Link>
       </div>
 

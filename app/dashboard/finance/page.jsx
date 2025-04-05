@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import Alert from '@/app/components/Alert';
+import Loading from '@/app/dashboard/loading';
 
 export default function FinancePage() {
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
@@ -95,9 +96,7 @@ export default function FinancePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+<Loading />
     );
   }
 
@@ -111,8 +110,14 @@ export default function FinancePage() {
         />
       )}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">الإدارة المالية</h1>
-        <div className="flex gap-4 mb-6">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+            <span className="text-blue-600 text-3xl">💰</span>
+            الإدارة المالية
+          </h1>
+          <p className="text-gray-500">إدارة الفواتير والمعاملات المالية</p>
+        </div>
+        <div className="flex gap-4 mt-6">
           {/* ... existing period selector buttons ... */}
         </div>
       </div>

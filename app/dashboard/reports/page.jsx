@@ -6,15 +6,15 @@ export default function ReportsPage() {
   const [dateRange, setDateRange] = useState('daily');
 
   const reports = [
-    { id: 'general', label: 'General Report', icon: '📊' },
-    { id: 'financial', label: 'Financial Report', icon: '💰' },
-    { id: 'medical', label: 'Medical Report', icon: '🏥' }
+    { id: 'general', label: 'تقرير عام', icon: '📊' },
+    { id: 'financial', label: 'تقرير مالي', icon: '💰' },
+    { id: 'medical', label: 'تقرير طبي', icon: '🏥' }
   ];
 
   const dateRanges = [
-    { id: 'daily', label: 'Daily' },
-    { id: 'weekly', label: 'Weekly' },
-    { id: 'monthly', label: 'Monthly' }
+    { id: 'daily', label: 'يومي' },
+    { id: 'weekly', label: 'أسبوعي' },
+    { id: 'monthly', label: 'شهري' }
   ];
 
   const statistics = {
@@ -46,23 +46,26 @@ export default function ReportsPage() {
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <span className="text-blue-600">📈</span>
-            Reports & Statistics
-          </h1>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+              <span className="text-blue-600 text-3xl">📈</span>
+              التقارير والإحصائيات
+            </h1>
+            <p className="text-gray-500">عرض وتحليل البيانات الإحصائية للمستشفى</p>
+          </div>
           
           <div className="flex gap-3">
             <button className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              Export PDF
+              PDF تصدير
             </button>
             <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200 shadow-sm hover:shadow-md">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              Export Excel
+              Excel تصدير
             </button>
           </div>
         </div>
@@ -70,7 +73,7 @@ export default function ReportsPage() {
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <div className="flex flex-col sm:flex-row gap-6 justify-between">
             <div className="space-y-2">
-              <h2 className="text-sm font-medium text-gray-600">Report Type</h2>
+              <h2 className="text-sm font-medium text-gray-600">نوع التقرير</h2>
               <div className="flex gap-3">
                 {reports.map(report => (
                   <button
@@ -90,7 +93,7 @@ export default function ReportsPage() {
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-sm font-medium text-gray-600">Time Period</h2>
+              <h2 className="text-sm font-medium text-gray-600">الفترة الزمنية</h2>
               <div className="flex gap-3">
                 {dateRanges.map(range => (
                   <button
@@ -115,23 +118,23 @@ export default function ReportsPage() {
           <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all duration-200 border border-gray-100">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <span className="text-blue-600">👥</span>
-              Patient Statistics
+              إحصائيات المرضى
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <span className="text-gray-600">Total Patients</span>
+                <span className="text-gray-600">إجمالي المرضى</span>
                 <span className="font-semibold text-lg">{statistics.patients.total}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-green-50 rounded-lg">
-                <span className="text-gray-600">New Patients</span>
+                <span className="text-gray-600">مرضى جدد</span>
                 <span className="text-green-600 font-medium">+{statistics.patients.new}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
-                <span className="text-gray-600">Discharged</span>
+                <span className="text-gray-600">تم خروجهم</span>
                 <span className="text-blue-600 font-medium">{statistics.patients.discharged}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-orange-50 rounded-lg">
-                <span className="text-gray-600">Under Treatment</span>
+                <span className="text-gray-600">تحت العلاج</span>
                 <span className="text-orange-600 font-medium">{statistics.patients.inTreatment}</span>
               </div>
             </div>
@@ -141,23 +144,23 @@ export default function ReportsPage() {
           <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all duration-200 border border-gray-100">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <span className="text-purple-600">📅</span>
-              Appointments
+              المواعيد
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <span className="text-gray-600">Total Appointments</span>
+                <span className="text-gray-600">إجمالي المواعيد</span>
                 <span className="font-semibold text-lg">{statistics.appointments.total}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-green-50 rounded-lg">
-                <span className="text-gray-600">Completed</span>
+                <span className="text-gray-600">مكتملة</span>
                 <span className="text-green-600 font-medium">{statistics.appointments.completed}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-red-50 rounded-lg">
-                <span className="text-gray-600">Cancelled</span>
+                <span className="text-gray-600">ملغاة</span>
                 <span className="text-red-600 font-medium">{statistics.appointments.cancelled}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
-                <span className="text-gray-600">Upcoming</span>
+                <span className="text-gray-600">قادمة</span>
                 <span className="text-blue-600 font-medium">{statistics.appointments.upcoming}</span>
               </div>
             </div>
@@ -167,23 +170,23 @@ export default function ReportsPage() {
           <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all duration-200 border border-gray-100">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <span className="text-green-600">💰</span>
-              Revenue
+              الإيرادات
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <span className="text-gray-600">Total Revenue</span>
+                <span className="text-gray-600">إجمالي الإيرادات</span>
                 <span className="font-semibold text-lg">{statistics.revenue.total}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-green-50 rounded-lg">
-                <span className="text-gray-600">Treatments</span>
+                <span className="text-gray-600">العلاجات</span>
                 <span className="text-green-600 font-medium">{statistics.revenue.treatments}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
-                <span className="text-gray-600">Medications</span>
+                <span className="text-gray-600">الأدوية</span>
                 <span className="text-blue-600 font-medium">{statistics.revenue.medications}</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-purple-50 rounded-lg">
-                <span className="text-gray-600">Laboratory</span>
+                <span className="text-gray-600">المختبر</span>
                 <span className="text-purple-600 font-medium">{statistics.revenue.laboratory}</span>
               </div>
             </div>
@@ -193,15 +196,15 @@ export default function ReportsPage() {
           <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all duration-200 border border-gray-100">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <span className="text-indigo-600">🏥</span>
-              Department Activity
+              نشاط الأقسام
             </h3>
             <div className="space-y-3">
               <div className="p-3 bg-green-50 rounded-lg">
-                <p className="text-gray-600 mb-1">Most Active</p>
+                <p className="text-gray-600 mb-1">الأكثر نشاطاً</p>
                 <p className="text-green-600 font-medium text-lg">{statistics.departments.mostActive}</p>
               </div>
               <div className="p-3 bg-red-50 rounded-lg">
-                <p className="text-gray-600 mb-1">Least Active</p>
+                <p className="text-gray-600 mb-1">الأقل نشاطاً</p>
                 <p className="text-red-600 font-medium text-lg">{statistics.departments.leastActive}</p>
               </div>
             </div>

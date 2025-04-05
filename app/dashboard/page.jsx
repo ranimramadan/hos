@@ -81,7 +81,13 @@ export default function DashboardPage() {
     <div className="p-8 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">My Dashboard</h1>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+              <span className="text-blue-600 text-3xl">🏥</span>
+              لوحة التحكم
+            </h1>
+            <p className="text-gray-500">نظرة عامة على أداء المستشفى</p>
+          </div>
           <div className="flex items-center gap-4">
             {/* Add any header actions here */}
           </div>
