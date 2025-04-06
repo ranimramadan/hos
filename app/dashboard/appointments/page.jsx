@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Link from 'next/link';
 import Alert from '@/app/dashboard/components/Alert';
-import Loading from '@/app/dashboard/components/loading';
+import Loading from '../components/loading';  // Fixed import path
 
 export default function AppointmentsPage() {
   const router = useRouter();

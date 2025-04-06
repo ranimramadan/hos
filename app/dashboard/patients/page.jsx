@@ -4,7 +4,7 @@ import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Alert from '@/app/dashboard/components/Alert';
-import Loading from '@/app/dashboard/components/loading';
+import Loading from '../components/loading';
 
 export default function PatientsPage() {
   const router = useRouter();
