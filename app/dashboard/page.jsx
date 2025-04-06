@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Loading from './loading';
+import Loading from './components/loading';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, Area } from 'recharts';
+
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -75,7 +76,9 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) return <Loading />;
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="p-8 bg-white min-h-screen">

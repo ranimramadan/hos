@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 // Add to imports
-import Alert from '@/app/components/Alert';
+import Alert from '@/app/dashboard/components/Alert';
 
 export default function ShowAppointmentPage({ params }) {
   const router = useRouter();

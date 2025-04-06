@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Alert from '@/app/components/Alert';
-import Loading from '@/app/dashboard/loading/page';
+import Alert from '@/app/dashboard/components/Alert';
+import Loading from '@/app/dashboard/components/loading/page';
 
 export default function ShowInvoicePage({ params }) {
   const router = useRouter();

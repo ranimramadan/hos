@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import Alert from '../components/Alert';
+import Alert from '../dashboard/components/Alert';
 
 export default function PatientHomePage() {
   const [user, setUser] = useState(null);

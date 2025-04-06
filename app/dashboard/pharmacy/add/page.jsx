@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Alert from '@/app/components/Alert';
+import Alert from '@/app/dashboard/components/Alert';
 
 export default function AddMedicationPage() {
   const router = useRouter();

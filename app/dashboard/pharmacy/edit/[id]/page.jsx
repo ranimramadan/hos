@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Alert from '@/app/components/Alert';
-import Loading from '@/app/dashboard/loading';
+import Alert from '@/app/dashboard/components/Alert';
+import Loading from '@/app/dashboard/components/loading';
 export default function EditMedicationPage({ params }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);

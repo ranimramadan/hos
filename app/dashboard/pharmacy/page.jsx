@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Alert from '@/app/components/Alert';
-import Loading from '@/app/dashboard/loading';
+import Alert from '@/app/dashboard/components/Alert';
+import Loading from '@/app/dashboard/components/loading';
 // Add useRouter import at the top
 import { useRouter } from 'next/navigation';
 

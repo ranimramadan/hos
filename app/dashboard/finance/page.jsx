@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import Alert from '@/app/components/Alert';
-import Loading from '@/app/dashboard/loading';
+import Alert from '@/app/dashboard/components/Alert';
+import Loading from '@/app/dashboard/components/loading';
 
 export default function FinancePage() {
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');

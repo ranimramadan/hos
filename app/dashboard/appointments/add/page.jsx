@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Alert from '@/app/components/Alert';
+import Alert from '@/app/dashboard/components/Alert';
 
 // Add to imports
-import Alert from '@/app/components/Alert';
+import Alert from '@/app/dashboard/components/Alert';
 
 export default function AddAppointmentPage() {
   // Add to state
