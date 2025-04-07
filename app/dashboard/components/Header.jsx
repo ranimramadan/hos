@@ -1,12 +1,11 @@
 'use client';
 import React from 'react'
 import '../../globals.css'
-
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default function DashboardHeader() {
+export default function Header({user}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
@@ -59,10 +58,22 @@ export default function DashboardHeader() {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-3 hover:bg-gray-50 rounded-full py-2 px-4 transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg font-semibold">
-                  د
-                </div>
-                <span className="text-sm font-medium text-gray-700 mr-2">د. محمد أحمد</span>
+                {user?.profile_image ? (
+                  <Image
+                  src={`http://127.0.0.1:8000/api/profile-image/${user.profile_image.split('/').pop()}`}
+                    alt={user.name}
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg font-semibold">
+                    {user?.name?.charAt(0) || 'م'}
+                  </div>
+                )}
+                <span className="text-sm font-medium text-gray-700 mr-2">
+                  {user?.name || 'مستخدم'}
+                </span>
               </button>
 
               {isProfileOpen && (
