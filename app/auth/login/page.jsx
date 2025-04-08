@@ -36,11 +36,16 @@ export default function LoginPage() {
       const response = await api.post('/api/login', formData);
       
       if (response.data.status) {
-        const userData = response.data.data.user;
-        localStorage.setItem('token', response.data.data.token);
+        // Store user data with token in the same object
+        const userData = {
+          ...response.data.data.user,
+          token: response.data.data.token
+        };
+        
+        // Save to localStorage
         localStorage.setItem('user', JSON.stringify(userData));
         
-        // Check user role and redirect accordingly
+        // Redirect based on role
         if (userData.role === 'doctor') {
           router.push('/dashboard');
         } else {

@@ -10,19 +10,20 @@ export default function LogoutPage() {
   useEffect(() => {
     const performLogout = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const userData = JSON.parse(localStorage.getItem('user'));
         
-        await axios.post('http://127.0.0.1:8000/api/logout', {}, {
+        await axios.post('http://127.0.0.1:8000/api/logout', null, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${userData.token}`,
             'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
+          },
+          withCredentials: true
         });
 
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        router.push('/auth/login');
+        // Clear all auth data
+        localStorage.clear();
+
+        router.push('/');
       } catch (error) {
         console.error('Logout error:', error);
         setError('حدث خطأ أثناء تسجيل الخروج');
