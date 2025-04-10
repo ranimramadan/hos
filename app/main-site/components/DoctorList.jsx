@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSearchParams, useRouter } from 'next/navigation';
 
@@ -80,14 +80,25 @@ function DoctorList() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const category = searchParams.get('category');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleBookNow = (doctor) => {
+    if (!isLoggedIn) {
+      router.push('/auth/login');
+      return;
+    }
+    
+    router.push(`/main-site/doctor-detail?name=${encodeURIComponent(doctor.name)}&specialty=${encodeURIComponent(doctor.specialty)}&experience=${encodeURIComponent(doctor.experience)}&description=${encodeURIComponent(doctor.description)}&image=${encodeURIComponent(doctor.image)}`);
+  };
 
   const filteredDoctors = category
     ? doctors.filter(doctor => doctor.specialty === category)
     : doctors;
-
-  const handleBookNow = (doctor) => {
-    router.push(`/main-site/doctor-detail?name=${encodeURIComponent(doctor.name)}&specialty=${encodeURIComponent(doctor.specialty)}&experience=${encodeURIComponent(doctor.experience)}&description=${encodeURIComponent(doctor.description)}&image=${encodeURIComponent(doctor.image)}`);
-  };
 
   return (
     <div className="py-10 px-6">
@@ -117,7 +128,7 @@ function DoctorList() {
               onClick={() => handleBookNow(doctor)}
               className="mt-3 w-full px-4 py-3 bg-white text-blue-500 border border-blue-500 rounded-full hover:bg-blue-500 hover:text-white transition-all"
             >
-              Book Now
+              {isLoggedIn ? 'Book Now' : 'Login to Book'}
             </button>
           </div>
         ))}
