@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Calendar, Clock, Phone, Mail, MapPin, Edit, FileText } from 'lucide-react';
 import Image from 'next/image';
+import axios from 'axios';
+import { toast, Toaster } from 'react-hot-toast';
 
 function Profile() {
   const [user, setUser] = useState(null);
@@ -20,61 +22,132 @@ function Profile() {
   });
 
   useEffect(() => {
-    // جلب بيانات المستخدم من localStorage
-    const userData = JSON.parse(localStorage.getItem('user'));
-    const profileData = JSON.parse(localStorage.getItem('profileData'));
-    const savedImage = localStorage.getItem('profileImage');
+    const fetchPatientData = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (userData) {
+          const response = await axios.get(
+            `http://127.0.0.1:8000/api/patients/${userData.id}`,
+            {
+              headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${userData.token}`,
+              },
+              withCredentials: true
+            }
+          );
 
-    if (userData) {
-      setUser(userData);
-      setFormData(prev => ({
-        ...prev,
-        ...profileData,
-        name: userData.name,
-        email: userData.email,
-      }));
-    }
-    
-    if (savedImage) {
-      setProfileImage(savedImage);
-    }
+          if (response.data.status) {
+            const patientData = response.data.data;
+            setUser(userData);
+            setFormData(prev => ({
+              ...prev,
+              name: patientData.name,
+              email: patientData.email,
+              phone: patientData.phone,
+              address: patientData.address,
+              profile_image: patientData.profile_image
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching patient data:', error);
+        toast.error('حدث خطأ أثناء جلب بيانات المريض');
+      }
+    };
+
+    fetchPatientData();
   }, []);
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const imageData = reader.result;
-        setProfileImage(imageData);
-        localStorage.setItem('profileImage', imageData);
-      };
-      reader.readAsDataURL(file);
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('حجم الصورة يجب أن لا يتجاوز 2 ميجابايت');
+        return;
+      }
+      setProfileImage(URL.createObjectURL(file));
+      setFormData(prev => ({ ...prev, profile_image: file }));
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
-      // حفظ البيانات في localStorage
-      localStorage.setItem('profileData', JSON.stringify(formData));
-      setIsEditing(false);
-      alert('Profile updated successfully!');
+      const userData = JSON.parse(localStorage.getItem('user'));
+      const formDataToSend = new FormData();
+      
+      // إضافة طريقة PUT
+      formDataToSend.append('_method', 'PUT');
+      
+      // إضافة التوكن
+      formDataToSend.append('token', userData.token);
+      
+      // إضافة البيانات الشخصية
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('address', formData.address);
+      
+      // إضافة البيانات الطبية
+      formDataToSend.append('date_of_birth', formData.dateOfBirth);
+      formDataToSend.append('blood_type', formData.bloodType);
+      formDataToSend.append('allergies', formData.allergies);
+      formDataToSend.append('weight', formData.weight);
+      formDataToSend.append('height', formData.height);
+
+      // إضافة الصورة إذا تم تحديثها
+      if (formData.profile_image instanceof File) {
+        formDataToSend.append('profile_image', formData.profile_image);
+      }
+
+      const response = await axios.post(
+        `http://127.0.0.1:8000/api/users/${userData.id}`,
+        formDataToSend,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${userData.token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+          withCredentials: true
+        }
+      );
+
+      if (response.data.status) {
+        toast.success('تم تحديث البيانات بنجاح', {
+          duration: 3000,
+          position: 'top-center',
+        });
+
+        // تحديث البيانات في localStorage
+        localStorage.setItem('user', JSON.stringify({
+          ...userData,
+          ...response.data.data.user,
+          token: userData.token
+        }));
+
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Failed to update profile');
+      toast.error(error.response?.data?.message || 'حدث خطأ أثناء تحديث البيانات');
     }
   };
 
+  // تعديل طريقة عرض الصورة
+  const getImageUrl = (imagePath) => {
+    if (formData.profile_image instanceof File) {
+      return URL.createObjectURL(formData.profile_image);
+    } else if (imagePath) {
+      return `http://127.0.0.1:8000/api/profile-image/${imagePath.split('/').pop()}`;
+    }
+    return null;
+  };
+
+  // Update the return JSX for the image
   return (
     <div className="container mx-auto px-4 py-16 bg-gray-50">
+      <Toaster />
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 p-10">
@@ -82,8 +155,14 @@ function Profile() {
               <div className="relative w-32 h-32">
                 <label className="cursor-pointer block w-full h-full">
                   <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center overflow-hidden">
-                    {profileImage ? (
-                      <Image src={profileImage} alt="Profile" width={128} height={128} className="w-full h-full object-cover rounded-full" />
+                    {formData.profile_image ? (
+                      <Image 
+                        src={getImageUrl(formData.profile_image)} 
+                        alt="Profile" 
+                        width={128} 
+                        height={128} 
+                        className="w-full h-full object-cover rounded-full" 
+                      />
                     ) : (
                       <User className="w-16 h-16 text-blue-500" />
                     )}
@@ -263,5 +342,13 @@ const MedicalInput = ({ label, name, value, onChange, type = "text" }) => (
     />
   </div>
 );
+
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  setFormData(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
 
 export default Profile;

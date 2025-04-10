@@ -3,24 +3,45 @@ import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import '../../globals.css'
+import axios from 'axios';
 
 function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setIsLoggedIn(false);
-        setUserName('');
-        window.location.href = '/main-site';
+    const handleLogout = async () => {
+        try {
+            const userData = JSON.parse(localStorage.getItem('user'));
+            
+            await axios.post('http://127.0.0.1:8000/api/logout', null, {
+                headers: {
+                    'Authorization': `Bearer ${userData.token}`,
+                    'Accept': 'application/json',
+                },
+                withCredentials: true
+            });
+
+            // Clear all auth data
+            localStorage.clear();
+            setIsLoggedIn(false);
+            setUserName('');
+            window.location.href = '/main-site';
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Still clear local storage and redirect even if API call fails
+            localStorage.clear();
+            setIsLoggedIn(false);
+            setUserName('');
+            window.location.href = '/main-site';
+        }
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const isUserLoggedIn = localStorage.getItem('isLoggedIn');
         const user = JSON.parse(localStorage.getItem('user'));
-        setIsLoggedIn(!!token);
+        
+        setIsLoggedIn(isUserLoggedIn === 'true');
         if (user) {
             setUserName(user.name);
         }
