@@ -36,6 +36,7 @@ export default function LoginPage() {
       const response = await api.post("/api/login", formData);
 
       if (response.data.status) {
+
         // Store user data with token
         const userData = {
           ...response.data.data.user,
@@ -48,6 +49,7 @@ export default function LoginPage() {
         // Redirect based on role
         if (userData.role === 'doctor') {
           router.push('/dashboard');
+
         } else {
           router.push("/main-site");
         }
