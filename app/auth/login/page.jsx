@@ -36,19 +36,13 @@ export default function LoginPage() {
       const response = await api.post("/api/login", formData);
 
       if (response.data.status) {
-        // Store user data with token in the same object
-        const userData = {
-          ...response.data.data.user,
-          token: response.data.data.token,
-          isLoggedIn: true  // إضافة حالة تسجيل الدخول
-        };
-        
-        // Save to localStorage
+        const userData = response.data.data.user;
+        localStorage.setItem('token', response.data.data.token);
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('isLoggedIn', 'true');  // إضافة مؤشر تسجيل الدخول منفصل
         
-        // تعديل التوجيه بناءً على الدور
-        if (userData.role === 'doctor' || userData.role === 'admin') {
+        // Check user role and redirect accordingly
+        if (userData.role === 'doctor') {
           router.push('/dashboard');
         } else if (userData.role === 'patient') {
           router.push('/main-site/profile');
