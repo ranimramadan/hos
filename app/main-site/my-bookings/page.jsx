@@ -4,6 +4,8 @@ import { Trash2, Calendar, Clock } from 'lucide-react';
 
 function MyBookings() {
   const [bookings, setBookings] = useState([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
 
   useEffect(() => {
     const savedBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
@@ -11,9 +13,15 @@ function MyBookings() {
   }, []);
 
   const handleCancelBooking = (bookingId) => {
-    const updatedBookings = bookings.filter(booking => booking.id !== bookingId);
+    setSelectedBookingId(bookingId);
+    setShowConfirmModal(true);
+  };
+
+  const confirmCancelBooking = () => {
+    const updatedBookings = bookings.filter(booking => booking.id !== selectedBookingId);
     setBookings(updatedBookings);
     localStorage.setItem('bookings', JSON.stringify(updatedBookings));
+    setShowConfirmModal(false);
   };
 
   const formatDate = (dateString) => {
@@ -79,6 +87,30 @@ function MyBookings() {
           ))
         )}
       </div>
+
+     
+      {showConfirmModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-transparent backdrop-blur-sm">
+          <div className="bg-white/80 backdrop-blur-md rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <h3 className="text-xl font-semibold mb-4">Cancel Appointment</h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to cancel this appointment?</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                No, Keep it
+              </button>
+              <button
+                onClick={confirmCancelBooking}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Yes, Cancel it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

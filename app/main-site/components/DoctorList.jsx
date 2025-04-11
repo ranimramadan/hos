@@ -2,78 +2,88 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSearchParams, useRouter } from 'next/navigation';
+import axios from 'axios';
 
-const doctors = [
+// تغيير اسم المصفوفة الثابتة إلى doctorsData
+const doctorsData = [
   { 
-    name: "Dr. Jane Cooper", 
-    specialty: "Neurologist", 
-    experience: "12 Years", 
-    description: "Specialist in dental surgery and cosmetic treatments.", 
-    image: "/images/doc5.png" 
+    name: "Dr. Jane Cooper",
+    specialty: "Neurologist",
+    experience: "12 Years",
+    description: "Specialist in dental surgery and cosmetic treatments.",
+    image: "/images/doc5.png"
   },
   { 
-    name: "Dr. Tom Cook", 
-    specialty: "Neurologist", 
-    experience: "20 Years", 
-    description: "Expert in brain disorders and nervous system treatments.", 
-    image: "/images/doc6.png" 
+    name: "Dr. Tom Cook",
+    specialty: "Neurologist",
+    experience: "20 Years",
+    description: "Expert in brain disorders and nervous system treatments.",
+    image: "/images/doc6.png"
   },
   { 
-    name: "Dr. Alex Johnson", 
-    specialty: "Cardiologist", 
-    experience: "15 Years", 
-    description: "Heart disease specialist with advanced treatment methods.", 
-    image: "/images/doc7.png" 
+    name: "Dr. Alex Johnson",
+    specialty: "Cardiologist",
+    experience: "15 Years",
+    description: "Heart disease specialist with advanced treatment methods.",
+    image: "/images/doc7.png"
   },
   { 
-    name: "Dr. Sarah White", 
-    specialty: "Dermatologist", 
-    experience: "10 Years", 
-    description: "Skincare expert, specializing in acne and laser treatments.", 
-    image: "/images/doc8.png" 
+    name: "Dr. Sarah White",
+    specialty: "Dermatologist",
+    experience: "10 Years",
+    description: "Skincare expert, specializing in acne and laser treatments.",
+    image: "/images/doc8.png"
   },
   { 
-    name: "Dr. Mark Lee", 
-    specialty: "General Physician", 
-    experience: "18 Years", 
-    description: "Provides comprehensive medical care for all age groups.", 
-    image: "/images/doc9.png" 
+    name: "Dr. Mark Lee",
+    specialty: "General Physician",
+    experience: "18 Years",
+    description: "Provides comprehensive medical care for all age groups.",
+    image: "/images/doc9.png"
   },
   { 
-    name: "Dr. Emily Davis", 
-    specialty: "Pediatrician", 
-    experience: "14 Years", 
-    description: "Dedicated to children's health and wellness.", 
-    image: "/images/doc10.png" 
+    name: "Dr. Emily Davis",
+    specialty: "Pediatrician",
+    experience: "14 Years",
+    description: "Dedicated to children's health and wellness.",
+    image: "/images/doc10.png"
   },
   { 
-    name: "Dr. David Brown", 
-    specialty: "Gastroenterologist", 
-    experience: "16 Years", 
-    description: "Expert in digestive system and liver diseases.", 
-    image: "/images/doc11.png" 
+    name: "Dr. David Brown",
+    specialty: "Gastroenterologist",
+    experience: "16 Years",
+    description: "Expert in digestive system and liver diseases.",
+    image: "/images/doc11.png"
   },
   { 
-    name: "Dr. Olivia Wilson", 
-    specialty: "Otolaryngologist", 
-    experience: "13 Years", 
-    description: "Specialist in ear, nose, and throat (ENT) disorders.", 
-    image: "/images/doc12.png" 
+    name: "Dr. Olivia Wilson",
+    specialty: "Otolaryngologist",
+    experience: "13 Years",
+    description: "Specialist in ear, nose, and throat (ENT) disorders.",
+    image: "/images/doc12.png"
   },
   { 
-    name: "Dr. Michael Scott", 
-    specialty: "Orthopedic", 
-    experience: "17 Years", 
-    description: "Treating bone and joint problems with advanced techniques.", 
-    image: "/images/doc13.png" 
+    name: "Dr. Michael Scott",
+    specialty: "Orthopedic",
+    experience: "17 Years",
+    description: "Treating bone and joint problems with advanced techniques.",
+    image: "/images/doc13.png"
   },
   { 
-    name: "Dr. Anna Roberts", 
-    specialty: "Pulmonologist", 
-    experience: "19 Years", 
-    description: "Expert in lung diseases and respiratory disorders.", 
-    image: "/images/doc14.png" 
+    name: "Dr. Anna Roberts",
+    specialty: "Pulmonologist",
+    experience: "19 Years",
+    description: "Expert in lung diseases and respiratory disorders.",
+    image: "/images/doc14.png"
   },
+  { 
+    name: "Dr. Anna Roberts",
+    specialty: "Pulmonologist",
+    experience: "19 Years",
+    description: "Expert in lung diseases and respiratory disorders.",
+    image: "/images/doc16.png"
+  },
+  
 ];
 
 function DoctorList() {
@@ -81,10 +91,48 @@ function DoctorList() {
   const router = useRouter();
   const category = searchParams.get('category');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
+    const fetchDoctors = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/doctors', {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.data.status) {
+          const formattedDoctors = response.data.data.map((doctor, index) => {
+            const staticDoctor = doctorsData[index % doctorsData.length];
+            return {
+              name: doctor.name,
+              email: doctor.email,
+              phone: doctor.phone,
+              address: doctor.address,
+              specialty: staticDoctor.specialty,
+              experience: staticDoctor.experience,
+              description: staticDoctor.description,
+              image: staticDoctor.image
+            };
+          });
+          setDoctors(formattedDoctors);
+        }
+      } catch (error) {
+        console.error('Error fetching doctors:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctors();
+    // تحديث طريقة التحقق من تسجيل الدخول
+    const user = localStorage.getItem('user');
+    setIsLoggedIn(!!user);
   }, []);
 
   const handleBookNow = (doctor) => {
