@@ -15,11 +15,19 @@ function Profile() {
     phone: '',
     address: '',
     dateOfBirth: '',
-    bloodType: '',
-    allergies: '',
-    weight: '',
-    height: '',
+    gender: '',
+    current_password: '',
+    new_password: '',
+    new_password_confirmation: ''
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -46,6 +54,8 @@ function Profile() {
               email: patientData.email,
               phone: patientData.phone,
               address: patientData.address,
+              gender: patientData.gender,
+              dateOfBirth: patientData.birth_date,
               profile_image: patientData.profile_image
             }));
           }
@@ -89,11 +99,14 @@ function Profile() {
       formDataToSend.append('address', formData.address);
       
       // إضافة البيانات الطبية
-      formDataToSend.append('date_of_birth', formData.dateOfBirth);
-      formDataToSend.append('blood_type', formData.bloodType);
-      formDataToSend.append('allergies', formData.allergies);
-      formDataToSend.append('weight', formData.weight);
-      formDataToSend.append('height', formData.height);
+      formDataToSend.append('birth_date', formData.dateOfBirth);
+
+      // إضافة بيانات تغيير كلمة المرور إذا تم إدخالها
+      if (formData.current_password && formData.new_password) {
+        formDataToSend.append('current_password', formData.current_password);
+        formDataToSend.append('new_password', formData.new_password);
+        formDataToSend.append('new_password_confirmation', formData.new_password_confirmation);
+      }
 
       // إضافة الصورة إذا تم تحديثها
       if (formData.profile_image instanceof File) {
@@ -143,7 +156,38 @@ function Profile() {
     }
     return null;
   };
-
+             // Add new state for medical records
+             const [medicalRecords, setMedicalRecords] = useState(null);
+              
+             // Add new useEffect for fetching medical records
+             useEffect(() => {
+               const fetchMedicalRecords = async () => {
+                 try {
+                   const userData = JSON.parse(localStorage.getItem('user'));
+                   if (userData) {
+                     const response = await axios.get(
+                       `http://127.0.0.1:8000/api/patients/${userData.id}/medical-records`,
+                       {
+                         headers: {
+                           'Accept': 'application/json',
+                           'Authorization': `Bearer ${userData.token}`,
+                         },
+                         withCredentials: true
+                       }
+                     );
+                     
+                     if (response.data.status) {
+                       setMedicalRecords(response.data.data[0]);
+                     }
+                   }
+                 } catch (error) {
+                   console.error('Error fetching medical records:', error);
+                   toast.error('حدث خطأ أثناء جلب السجلات الطبية');
+                 }
+               };
+               
+               fetchMedicalRecords();
+             }, []);
   // Update the return JSX for the image
   return (
     <div className="container mx-auto px-4 py-16 bg-gray-50">
@@ -213,6 +257,19 @@ function Profile() {
                         />
                       </div>
                       <div className="space-y-2">
+                        <label className="text-sm text-gray-500">Gender</label>
+                        <select
+                          name="gender"
+                          value={formData.gender}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border rounded"
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
                         <label className="text-sm text-gray-500">Phone</label>
                         <input
                           type="tel"
@@ -246,6 +303,7 @@ function Profile() {
                   ) : (
                     <>
                       <InfoItem icon={Calendar} label="Date of Birth" value={formData.dateOfBirth || 'Not set'} />
+                      <InfoItem icon={User} label="Gender" value={formData.gender || 'Not set'} />
                       <InfoItem icon={Phone} label="Phone" value={formData.phone || 'Not set'} />
                       <InfoItem icon={Mail} label="Email" value={formData.email} />
                       <InfoItem icon={MapPin} label="Address" value={formData.address || 'Not set'} />
@@ -254,29 +312,67 @@ function Profile() {
                 </div>
               </div>
 
-              <div className="space-y-6 bg-white p-6 rounded-2xl shadow-sm">
-                <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-500" />
-                  Medical Information
-                </h2>
-                <div className="space-y-4">
-                  {isEditing ? (
-                    <>
-                      <MedicalInput label="Blood Type" name="bloodType" value={formData.bloodType} onChange={handleInputChange} />
-                      <MedicalInput label="Allergies" name="allergies" value={formData.allergies} onChange={handleInputChange} />
-                      <MedicalInput label="Weight (kg)" name="weight" value={formData.weight} onChange={handleInputChange} type="number" />
-                      <MedicalInput label="Height (cm)" name="height" value={formData.height} onChange={handleInputChange} type="number" />
-                    </>
-                  ) : (
-                    <>
-                      <MedicalInfo label="Blood Type" value={formData.bloodType} />
-                      <MedicalInfo label="Allergies" value={formData.allergies} />
-                      <MedicalInfo label="Weight" value={formData.weight ? `${formData.weight} kg` : 'Not set'} />
-                      <MedicalInfo label="Height" value={formData.height ? `${formData.height} cm` : 'Not set'} />
-                    </>
-                  )}
+              {isEditing && (
+                <div className="space-y-6 bg-white p-6 rounded-2xl shadow-sm mt-8">
+                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Change Password
+                  </h2>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-500">Current Password</label>
+                      <input
+                        type="password"
+                        name="current_password"
+                        value={formData.current_password}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-500">New Password</label>
+                      <input
+                        type="password"
+                        name="new_password"
+                        value={formData.new_password}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-500">Confirm New Password</label>
+                      <input
+                        type="password"
+                        name="new_password_confirmation"
+                        value={formData.new_password_confirmation}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {!isEditing && (
+                <div className="space-y-6 bg-white p-6 rounded-2xl shadow-sm">
+                  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-blue-500" />
+                    Medical Information
+                  </h2>
+                  <div className="space-y-4">
+                    <MedicalInfo label="Blood Type" value={medicalRecords?.blood_type || 'Not set'} />
+                    <MedicalInfo label="Allergies" value={medicalRecords?.allergies || 'Not set'} />
+                    <MedicalInfo label="Diagnosis" value={medicalRecords?.diagnosis || 'Not set'} />
+                    <MedicalInfo label="Medications" value={medicalRecords?.medications || 'Not set'} />
+                    <MedicalInfo label="Vital Signs" value={medicalRecords?.vital_signs || 'Not set'} />
+                    <MedicalInfo label="Medical History" value={medicalRecords?.medical_history || 'Not set'} />
+                    <MedicalInfo label="Notes" value={medicalRecords?.notes || 'Not set'} />
+                    <MedicalInfo label="Last Updated" value={medicalRecords ? new Date(medicalRecords.updated_at).toLocaleDateString() : 'Not set'} />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-8 flex gap-4">
@@ -342,13 +438,5 @@ const MedicalInput = ({ label, name, value, onChange, type = "text" }) => (
     />
   </div>
 );
-
-const handleInputChange = (e) => {
-  const { name, value } = e.target;
-  setFormData(prev => ({
-    ...prev,
-    [name]: value
-  }));
-};
 
 export default Profile;
