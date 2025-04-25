@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Header from "./components/Header";
 import SideBar from "./components/SideBar";
-
+import { LanguageProvider } from '../context/LanguageContext';
 
 export default function DashboardLayout({ children }) {
   const [user, setUser] = useState(null);
@@ -15,6 +15,7 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   return (
+    <LanguageProvider>
     <div className="min-h-screen flex flex-col">
       <Header user={user} />
       <div className="flex flex-1">
@@ -24,5 +25,6 @@ export default function DashboardLayout({ children }) {
         </main>
       </div>
     </div>
+    </LanguageProvider>
   );
 }

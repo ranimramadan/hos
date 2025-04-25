@@ -177,7 +177,7 @@ export default function DoctorsPage() {
                   </Link>
                   <Link 
                     href={`/dashboard/doctors/edit/${doctor.id}`}
-                    className="text-gray-600 hover:text-gray-900 mx-2"
+                    className="text-green-600 hover:text-green-900 mx-2"
                   >
                     تعديل
                   </Link>

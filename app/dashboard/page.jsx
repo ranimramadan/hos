@@ -2,23 +2,25 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Loading from './components/loading';
+import { useLanguage } from '../context/LanguageContext';
 
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, Area } from 'recharts';
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   const hospitalDepartments = [
-    { name: 'General Medicine', value: 40 },
-    { name: 'Surgery', value: 25 },
-    { name: 'Emergency', value: 20 },
-    { name: 'Pediatrics', value: 15 },
+    { name: t('dashboard.departmentsList.general'), value: 40 },
+    { name: t('dashboard.departmentsList.surgery'), value: 25 },
+    { name: t('dashboard.departmentsList.emergency'), value: 20 },
+    { name: t('dashboard.departmentsList.pediatrics'), value: 15 },
   ];
 
   const monthlyStats = [
-    { name: 'Sunday', Consultations: 35, Surgeries: 20, Emergency: 15 },
-    { name: 'Monday', Consultations: 45, Surgeries: 35, Emergency: 25 },
+    { name: t('dashboard.days.sunday'), Consultations: 35, Surgeries: 20, Emergency: 15 },
+    { name: t('dashboard.days.monday'), Consultations: 45, Surgeries: 35, Emergency: 25 },
     { name: 'Tuesday', Consultations: 30, Surgeries: 25, Emergency: 20 },
     { name: 'Wednesday', Consultations: 40, Surgeries: 30, Emergency: 35 },
     { name: 'Thursday', Consultations: 35, Surgeries: 25, Emergency: 20 },
@@ -41,25 +43,25 @@ export default function DashboardPage() {
 
   const metrics = [
     {
-      title: 'Total Patients',
+      title: t('dashboard.totalPatients'),
       value: '852',
       change: '+14%',
       data: relationshipsData.map(d => ({ value: d.relationships })),
-      color: '#38BDF8'  // Light blue to match bar chart
+      color: '#38BDF8'
     },
     {
-      title: 'Visit Rate',
+      title: t('dashboard.visitRate'),
       value: '42%',
       change: '-10%',
       data: relationshipsData.map(d => ({ value: d.risk })),
-      color: '#0369A1'  // Dark blue to match bar chart
+      color: '#0369A1'
     },
     {
-      title: 'Occupancy Rate',
+      title: t('dashboard.occupancyRate'),
       value: '94%',
       change: '+27%',
       data: relationshipsData.map(d => ({ value: d.coverage })),
-      color: '#E0F2FE'  // Very light blue to match bar chart
+      color: '#E0F2FE'
     }
   ];
 
@@ -88,9 +90,9 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
               <span className="text-blue-600 text-3xl">🏥</span>
-              لوحة التحكم
+              {t('dashboard.title')}
             </h1>
-            <p className="text-gray-500">نظرة عامة على أداء المستشفى</p>
+            <p className="text-gray-500">{t('dashboard.overview')}</p>
           </div>
           <div className="flex items-center gap-4">
             {/* Add any header actions here */}
@@ -136,11 +138,11 @@ export default function DashboardPage() {
           {/* Bar Chart */}
           <div className="bg-white rounded-xl border border-gray-100 p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold text-gray-800">WEEKLY VISITS</h2>
+              <h2 className="text-lg font-semibold text-gray-800">{t('dashboard.weeklyVisits')}</h2>
               <div className="flex items-center gap-4 text-sm text-gray-500">
-                <span>Last Week</span>
-                <span>1,132 Visits</span>
-                <span>7,544 Total</span>
+                <span>{t('dashboard.lastWeek')}</span>
+                <span>{t('dashboard.visits', { count: '1,132' })}</span>
+                <span>{t('dashboard.total', { count: '7,544' })}</span>
               </div>
             </div>
             <div className="h-80">
@@ -174,15 +176,15 @@ export default function DashboardPage() {
             <div className="flex gap-6 mt-4 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#38BDF8]"></div>
-                <span>Consultations</span>
+                <span>{t('dashboard.charts.consultations')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#0369A1]"></div>
-                <span>Surgeries</span>
+                <span>{t('dashboard.charts.surgeries')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#E0F2FE]"></div>
-                <span>Emergency</span>
+                <span>{t('dashboard.charts.emergency')}</span>
               </div>
             </div>
           </div>

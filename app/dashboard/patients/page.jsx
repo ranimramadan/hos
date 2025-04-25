@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Alert from '@/app/dashboard/components/Alert';
 import Loading from '../components/loading';
-
 export default function PatientsPage() {
   const router = useRouter();
   const [patients, setPatients] = useState([]);
@@ -13,7 +13,7 @@ export default function PatientsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState(null);
-
+  const { t } = useLanguage();
   const fetchPatients = async () => {
     try {
       const response = await axios.get('http://127.0.0.1:8000/api/patients', {
@@ -26,14 +26,14 @@ export default function PatientsPage() {
       if (response.data && response.data.data) {
         setPatients(response.data.data);
         setNotification({
-          message: 'تم تحميل بيانات المرضى بنجاح',
+          message: t('patients.loadSuccess'),
           type: 'success'
         });
       }
     } catch (error) {
       setError('Failed to load patient data');
       setNotification({
-        message: 'فشل في تحميل بيانات المرضى',
+        message: t('patients.loadError'),
         type: 'error'
       });
     } finally {
@@ -89,9 +89,9 @@ export default function PatientsPage() {
         <div>
           <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
             <span className="text-blue-600 text-3xl">👥</span>
-            قائمة المرضى
+            {t('patients.title')}
           </h1>
-          <p className="text-gray-500">إدارة ومتابعة بيانات المرضى</p>
+          <p className="text-gray-500">{t('patients.subtitle')}</p>
         </div>
         <Link
           href="/dashboard/patients/add"
@@ -100,14 +100,14 @@ export default function PatientsPage() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          إضافة مريض جديد
+          {t('patients.addNew')}
         </Link>
       </div>
 
       <div className="mb-4">
         <input
           type="text"
-          placeholder="البحث عن مريض..."
+          placeholder={t('patients.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full p-2 border rounded-lg"
@@ -119,19 +119,19 @@ export default function PatientsPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                الاسم
+                {t('patients.name')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                البريد الإلكتروني
+                {t('patients.email')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                رقم الهاتف
+                {t('patients.phone')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                العنوان
+                {t('patients.address')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                الإجراءات
+                {t('patients.actions')}
               </th>
             </tr>
           </thead>
@@ -147,19 +147,19 @@ export default function PatientsPage() {
                     onClick={() => router.push(`/dashboard/patients/show/${patient.id}`)}
                     className="text-blue-600 hover:text-blue-900 ml-2"
                   >
-                    عرض
+                    {t('patients.view')}
                   </button>
                   <button
                     onClick={() => router.push(`/dashboard/patients/edit/${patient.id}`)}
                     className="text-green-600 hover:text-green-900 ml-2"
                   >
-                    تعديل
+                    {t('patients.edit')}
                   </button>
                   <button
                     onClick={() => handleDelete(patient.id)}
                     className="text-red-600 hover:text-red-900"
                   >
-                    حذف
+                    {t('patients.delete')}
                   </button>
                 </td>
               </tr>

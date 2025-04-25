@@ -169,20 +169,21 @@ function Profile() {
                        `http://127.0.0.1:8000/api/patients/${userData.id}/medical-records`,
                        {
                          headers: {
-                           'Accept': 'application/json',
                            'Authorization': `Bearer ${userData.token}`,
-                         },
-                         withCredentials: true
+                           'Accept': 'application/json',
+                           'Content-Type': 'application/json'
+                         }
                        }
                      );
                      
                      if (response.data.status) {
-                       setMedicalRecords(response.data.data[0]);
+                       setMedicalRecords(response.data.data);
                      }
                    }
                  } catch (error) {
-                   console.error('Error fetching medical records:', error);
-                   toast.error('حدث خطأ أثناء جلب السجلات الطبية');
+                   console.error('Error fetching medical records:', error.response?.data || error.message);
+                   // Handle the error appropriately
+                   setMedicalRecords([]);
                  }
                };
                
