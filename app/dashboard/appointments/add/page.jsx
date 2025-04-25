@@ -4,12 +4,19 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Alert from '@/app/dashboard/components/Alert';
 
-// Add to imports
-import Alert from '@/app/dashboard/components/Alert';
-
 export default function AddAppointmentPage() {
-  // Add to state
   const [notification, setNotification] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    date: '',
+    time: '',
+    doctor_id: '',
+    patient_id: ''
+  });
+  const [doctors, setDoctors] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
