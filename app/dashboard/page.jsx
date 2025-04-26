@@ -3,13 +3,35 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Loading from './components/loading';
 import { useLanguage } from '../context/LanguageContext';
+import Image from 'next/image';
 
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, Area } from 'recharts';
 
 export default function DashboardPage() {
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
+  const [doctor, setDoctor] = useState(null);  // Add this line
   const router = useRouter();
+
+  // Add this useEffect for fetching doctor data
+  useEffect(() => {
+    const fetchDoctorData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/auth/user', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Accept': 'application/json'
+          }
+        });
+        const data = await response.json();
+        setDoctor(data);
+      } catch (error) {
+        console.error('Error fetching doctor data:', error);
+      }
+    };
+
+    fetchDoctorData();
+  }, []);
 
   const hospitalDepartments = [
     { name: t('dashboard.departmentsList.general'), value: 40 },
@@ -94,8 +116,30 @@ export default function DashboardPage() {
             </h1>
             <p className="text-gray-500">{t('dashboard.overview')}</p>
           </div>
-          <div className="flex items-center gap-4">
-            {/* Add any header actions here */}
+        </div>
+
+      
+        <div className="mb-8 bg-gradient-to-r from-blue-500 to-blue-800 rounded-2xl overflow-hidden">
+          <div className="p-8 flex items-center justify-between relative">
+            <div className="text-white">
+              <h2 className="text-2xl font-semibold mb-2">
+                {t('dashboard.welcome')} 
+              </h2>
+              <p className="text-blue-100">
+                {new Date().toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+            <div className="relative w-60 h-60"> 
+              <Image
+                src={doctor?.image_url || "/images/doc.png"}
+                alt="Doctor"
+                fill
+                className="object-contain"
+              />
+            </div>
+            {/* Decorative Elements */}
+            <div className="absolute right-0 top-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-2xl"></div>
+            <div className="absolute left-0 bottom-0 w-48 h-48 bg-blue-400/10 rounded-full -mb-24 -ml-24 blur-xl"></div>
           </div>
         </div>
 

@@ -3,6 +3,7 @@ export const translations = {
     dashboard: {
       title: "Dashboard",
       appointments: "Appointments",
+      welcome: "Welcome Doctor !",
       doctors: "Doctors",
       patients: "Patients",
       settings: "Settings",
@@ -85,6 +86,8 @@ export const translations = {
     dashboard: {
       title: "لوحة التحكم",
       appointments: "المواعيد",
+      
+      welcome: " مرحباً بك دكتور ! ",
       doctors: "الأطباء",
       patients: "المرضى",
       settings: "الإعدادات",
